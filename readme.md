@@ -4,7 +4,7 @@ This module lets you send SilverStripe emails through the [official Postmark PHP
 
 ## Requirements
  * PHP 5.5+
- * SilverStripe ^3.1
+ * SilverStripe ^4.0
  * [Postmark-PHP](https://github.com/wildbit/postmark-php)
 
 *Note: an alternative Postmark Mailer class that works with older versions of SilverStripe and PHP is available [here](https://github.com/fullscreeninteractive/silverstripe-postmarkmailer).*

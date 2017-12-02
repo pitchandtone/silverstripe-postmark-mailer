@@ -1,16 +1,18 @@
 <?php
+namespace Jonom\PostmakrMailer;
+
 use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkAttachment;
 use Postmark\Models\PostmarkException;
 
 /**
- * A {@link Mailer} subclass to handle sending emails through the Postmark 
+ * A {@link Mailer} subclass to handle sending emails through the Postmark
  * webservice API rather then send_mail(). Uses the official Postmark PHP library.
  *
  */
 
 class PostmarkMailer extends Mailer {
-	
+
 	/**
 	 * Your Postmark App API Key. Get one at https://postmarkapp.com/
 	 *
@@ -18,7 +20,7 @@ class PostmarkMailer extends Mailer {
 	 * @var string
 	 */
 	private static $api_key = '';
-	
+
 	/**
 	 * List of confirmed email addresses (sender signatures). Set them up at https://postmarkapp.com/
 	 *
@@ -26,7 +28,7 @@ class PostmarkMailer extends Mailer {
 	 * @var array
 	 */
 	private static $sender_signatures = array();
-	
+
 	/**
 	 * Send a plain-text email.
 	 *
@@ -41,10 +43,10 @@ class PostmarkMailer extends Mailer {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * Send an email as both HTML and plaintext
-	 * 
+	 *
 	 * @return bool
 	 */
 	public function sendHTML($to, $from, $subject, $htmlContent, $attachedFiles = false, $customheaders = false, $plainContent = false) {
@@ -56,24 +58,24 @@ class PostmarkMailer extends Mailer {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * Send email through Postmark's REST API
 	 *
 	 * @return bool (true = sent successfully)
 	 */
 	private function sendPostmarkEmail($to, $from, $subject, $htmlContent = NULL, $attachedFiles = NULL, $customHeaders = NULL, $plainContent = NULL) {
-		
+
 		$apiKey = $this->config()->get('api_key');
 		$senderSignatures = $this->config()->get('sender_signatures');
 		$cc = NULL;
 		$bcc = NULL;
 		$replyTo = NULL;
-		
+
 		if(!$apiKey) user_error('A Postmark App API key is required to send email', E_USER_ERROR);
 		if(!($htmlContent||$plainContent)) user_error("Can't send email with no content", E_USER_ERROR);
 		if(empty($senderSignatures)) user_error('At least one Postmark App sender signature is required to send email', E_USER_ERROR);
-		
+
 		// Parse out problematic custom headers
 		if (is_array($customHeaders)) {
 			if (array_key_exists('Cc', $customHeaders)) {
@@ -90,14 +92,14 @@ class PostmarkMailer extends Mailer {
 			}
 			if (empty($customHeaders)) $customHeaders = NULL;
 		} else {$customHeaders = NULL;}
-		
+
 		// Ensure from address is valid
 		if (!in_array($from, $senderSignatures)) {
 			// Fallback to first valid signature
 			if (!$replyTo) $replyTo = $from;
 			$from = $senderSignatures[0];
 		}
-		
+
 		// Set up attachments
 		$attachments = array();
 		if ($attachedFiles && is_array($attachedFiles)) {
@@ -105,12 +107,12 @@ class PostmarkMailer extends Mailer {
 				$attachments[] = PostmarkAttachment::fromRawData($f['contents'], $f['filename'], $f['mimetype']);
 			}
 		}
-		
+
 		// Send the email
 		try {
 			$client = new PostmarkClient($apiKey);
-			$sendResult = $client->sendEmail($from, $to, $subject, 
-				$htmlContent, $plainContent, $tag = NULL, $trackOpens = true, $replyTo, 
+			$sendResult = $client->sendEmail($from, $to, $subject,
+				$htmlContent, $plainContent, $tag = NULL, $trackOpens = true, $replyTo,
 				$cc, $bcc, $customHeaders, $attachments);
 			return true;
 		}
